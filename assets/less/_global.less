@@ -1,0 +1,48 @@
+body {background: #444; color: #fff;}
+
+/*==============================================================================
+Main Ajax-based registration form - output on /coordinator
+============================================================================*/
+.result-message { display: none; }
+
+.indicator {
+  display: none;
+  background: url(../img/ajax-loader.gif) 20px 20px no-repeat;
+  height: 60px;
+  padding: 60px 0;
+}
+
+.cw-student-registration-form {
+
+  // Indicator visibility controlled in /assets/js/plugins/ajax-registration.js
+  // ---------------------------------------------------------------------------
+  .indicator {
+    display: none;
+    background: url(../img/ajax-loader.gif) 20px 20px no-repeat;
+    height: 60px;
+    padding: 60px 0;
+  }
+
+  // This is used to print the coordinator_id into the form - so it can be used by Ajax
+  // ---------------------------------------------------------------------------
+  #refcode {
+    opacity: 0;
+    height: 0;
+  }
+
+}
+
+.form-control,
+.btn,
+.form-group-lg .form-control {
+
+  border-radius: 0;
+
+}
+
+/*==============================================================================
+User Search
+============================================================================*/
+.form-inline.user-search {
+  margin-bottom: 20px;
+}

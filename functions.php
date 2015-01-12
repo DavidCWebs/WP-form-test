@@ -9,6 +9,7 @@
  *
  * @link https://github.com/roots/roots/pull/1042
  */
+
 $roots_includes = array(
   'lib/utils.php',           // Utility functions
   'lib/init.php',            // Initial theme setup and constants
@@ -21,6 +22,11 @@ $roots_includes = array(
   'lib/gallery.php',         // Custom [gallery] modifications
   'lib/scripts.php',         // Scripts and stylesheets
   'lib/extras.php',          // Custom functions
+  'classes/class-cw-view-form.php',
+  'classes/class-cw-reg-validator.php',
+  'classes/class-cw-create-user.php',
+  'lib/forms.php',
+  'lib/user-roles.php'
 );
 
 foreach ($roots_includes as $file) {
