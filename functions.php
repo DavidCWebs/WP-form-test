@@ -21,6 +21,7 @@ $roots_includes = array(
   'lib/nav.php',             // Custom nav modifications
   'lib/gallery.php',         // Custom [gallery] modifications
   'lib/scripts.php',         // Scripts and stylesheets
+  'lib/class-cw-pdf.php',
   'lib/extras.php',          // Custom functions
   'classes/class-cw-view-form.php',
   'classes/class-cw-reg-validator.php',

@@ -1,6 +1,362 @@
 <?php
 //use Respect\Validation\Validator;
 //use Respect\Validation\Validator as v;
+//
+//
+//
+
+
+function carawebs_create_PDF( $current_username, $post_ID ){
+
+  // Include the main TCPDF library (search for installation path).
+  require_once(get_template_directory() . '/tcpdf/tcpdf.php');
+
+  // create new PDF document
+  //$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+  //$pdf = new TCPDF();
+  $pdf = new CW_PDF();
+
+  // set document information
+  //$pdf->SetCreator(PDF_CREATOR);
+  $pdf->SetAuthor('David Egan');
+  $pdf->SetTitle('TCPDF Test One');
+  $pdf->SetSubject('Student Studio');
+  $pdf->SetKeywords('TCPDF, PDF, example, test, guide');
+
+  // set default header data
+  //$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE.' 001', PDF_HEADER_STRING, array(0,64,255), array(0,64,128));
+  $pdf->setFooterData(array(0,64,0), array(0,64,128));
+
+  // set header and footer fonts
+  $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+  $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+  // set default monospaced font
+  //$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+  // set margins
+  $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+  $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+  $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+  // set auto page breaks
+  $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+  // set image scale factor
+  $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+  // set default font subsetting mode
+  $pdf->setFontSubsetting(true);
+
+  // Set font
+  // dejavusans is a UTF-8 Unicode font, if you only need to
+  // print standard ASCII chars, you can use core fonts like
+  // helvetica or times to reduce file size.
+  $pdf->SetFont('helvetica', '', 14, '', true);
+
+  // Add a page
+  // This method has several options, check the source code documentation for more information.
+  $pdf->AddPage();
+
+  // Set some content to print
+$html = "<h1>$current_username - You've Created a Mother-Fucking PDF!</h1>";
+$html .= "<p>The current post ID is $post_ID, so we can get the workbook info.</p>
+<p>Look, I'm just not ready to ask Lorraine out to the dance, and not you, nor anybody else on this planet is gonna make me change my mind.</p>
+<p>C'mon, he's not that bad. At least he's letting you borrow the car tomorrow night.</p>
+<p>Hey Biff, check out this guy's life preserver, dork thinks he's gonna drown. Shit.</p>";
+
+//$html .= the_content(1);
+$post_id = 1;
+$post_object = get_post( $post_id );
+$html .= $post_object->post_content;
+
+/*<<<EOD
+<h1>You've created a PDF</h1>
+<i>This is the first example of PDF creation in Student Studio.</i>
+<p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>
+<p>Please check the source code documentation and other examples for further information.</p>
+EOD;*/
+
+  // Print text using writeHTMLCell()
+  $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+
+  // ---------------------------------------------------------
+
+  // Close and output PDF document
+  // This method has several options, check the source code documentation for more information.
+  $pdf->Output('example_001.pdf', 'I');
+
+}
+
+function carawebs_process_pdf() {
+
+	if ( isset( $_POST['pdf-button'] ) && 'create-pdf' == $_POST['pdf-button'] ) {
+
+    $current_user           = wp_get_current_user();  // Current user object
+    // if we want to get student user from a supervisor view, use $_GET studentID variable in the URL????
+    $current_user_id        = $current_user->ID;      // Current user ID
+    $current_username       = $current_user->user_firstname . ' ' . $current_user->user_lastname;
+
+    // get_the_ID() isn't yet available, so use url_to_postid();
+    $post_ID = url_to_postid( "http://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'] ) ;
+
+		//carawebs_test_head_function();
+		carawebs_create_PDF( $current_username, $post_ID );
+
+	} // end if
+
+} // end my_theme_send_email
+add_action( 'init', 'carawebs_process_pdf' );
+
+
+/*function cw_init_test(){
+
+  echo '<h1>init test</h1>';
+
+}
+
+//add_action( 'init', 'cw_init_test', 0 );
+
+
+
+class Function_Form {
+
+  public $validate;
+  public $input;
+
+  function __construct() {
+
+    //add_action( 'init', array($this, 'form_processor'), 0 );
+    //add_action( 'init', $this->form_processor()) ;
+    //add_action('init', array(&$this, 'init'),1);
+
+    $this->init();
+
+    //echo $this->render_form();
+
+  }
+
+  public function init(){
+
+    echo '<h1>$this->init</h1>';
+
+    add_action('init', array($this, 'form_processor'));
+
+  }
+
+  function render_form() {
+
+    //
+     // If the submission was successful, the page will have reloaded and $_SESSION
+     // will have been set.
+
+    if ( isset ($_SESSION['validate']) ) {
+
+      $success_message = $_SESSION['validate'];
+
+    }
+
+    $output = '';
+
+    if( $this->validate['success'] == 'error' ){
+
+      $output .= '<div class="error">'.$this->validate['message'].'</div>';
+
+    } elseif( ( isset ($_SESSION['validate']) ) && $success_message['success'] == 'success' ){
+
+      $output .= '<div class="success">'.$success_message['message'].'</div>';
+
+      unset($_SESSION['validate']); // Clear the session, ready for the next time.
+
+    }
+
+    // Put this into a partial
+    $output .= '<form class="registration-form" role="form" name="my_form" method="post">';
+    $output .= '<div class="form-group">
+                  <input autocomplete="off" type="text" name="form_data" id="cw_lastname" placeholder="Data" class="form-control" />
+                </div>';
+    $output .= '<button type="submit">'.__('Submit').'</button>';
+    $output .= '</form>';
+
+    return $output;
+
+    echo '<pre>';
+    var_dump($success_message);
+    echo '</pre>';
+
+    $this->input = $_POST['my_form'];
+
+  }
+
+  public function form_processor() {
+
+  if( isset($_POST['form_data']) ) {
+
+    // This won't validate - doesn't know $this!
+    $this->validate_form( $_POST['form_data'] );
+
+      if ( $this->validate['success'] == 'success' ) {
+
+        $success = $this->save_form_data( $_POST['form_data'] );
+
+        if ( $success ) {
+
+          if( !session_id() ){
+
+            session_start();
+
+          }
+
+          $_SESSION['validate'] = $this->validate;
+
+          // Redirect to same page. No headers sent yet, so we're OK!
+          header('Location: ' . $_SERVER['HTTP_REFERER']);
+
+          exit();
+
+        }
+
+      }
+
+    }
+
+  }
+
+  function save_form_data( $form_data ) {
+
+      // Run save process here, return true if successful
+      return true;
+
+  }
+
+  function validate_form( $data ) {
+
+    $validation = array();
+
+    if( $data == 'validate_me' ) {
+
+        $validation['success'] = "success";
+        $validation['message'] = "You entered" . $_POST['form_data'];
+
+    } else {
+
+        $validation['success'] = "error";
+        $validation['message'] = "Nope - the error message";
+
+    }
+
+    $this->validate = $validation;
+
+  }
+
+}*/
+
+//new Function_Form();
+
+
+class MyForm {
+
+    private $validate;
+
+    function __construct() {
+         add_shortcode( 'myform', array($this, 'my_form') ); // add the shortcode from a new object from this class
+         add_action( 'init', array($this, 'wpse_process_my_form') );
+    }
+
+    //function my_form( $atts ) {
+    function my_form() {
+        // Somehow get the errors ($validate) generated in the function attached to init
+        //
+         if ( isset ($_SESSION['validate']) ) { $success_message = $_SESSION['validate'];
+
+         echo '<pre>';
+         var_dump ($_SESSION['validate']);
+         echo '</pre>';
+         };
+
+        $output = '';
+
+        // output form (with errors if found)
+        if( $this->validate['success'] == 'error' ){
+
+             $output .= '<div class="error">'.$this->validate['message'].'</div>';
+
+        } elseif( ( isset ($_SESSION['validate']) ) && $success_message['success'] == 'success' ){
+
+          $output .= '<div class="success">'.$success_message['message'].'</div>';
+
+          unset($_SESSION['validate']);
+
+
+        }
+        $output .= '<form class="registration-form" role="form" name="my_form" method="post">';
+        $output .= '<div class="form-group">
+                    <input autocomplete="off" type="text" name="form_data" id="cw_lastname" placeholder="Data" class="form-control" />
+                  </div>';
+        //$output .= '<input type="text" name="form_data">';
+        $output .= '<button type="submit">'.__('Submit').'</button>';
+        $output .= '</form>';
+
+        return $output;
+
+    }
+
+    function wpse_process_my_form() {
+        if( isset($_POST['form_data']) ) {
+
+            $this->wpse_validate_my_form( $_POST['form_data'] );
+
+            if ( $this->validate['success'] == 'success' ) {
+
+                $success = $this->wpse_save_my_form( $_POST['form_data'] );
+
+                if ( $success ) {
+
+                  if( !session_id() ){
+
+                    session_start();
+
+                  }
+
+                  $_SESSION['validate'] = $this->validate;
+
+                  header('Location: ' . $_SERVER['HTTP_REFERER']);
+
+                  //wp_redirect( '/success', 302 );
+                    exit();
+
+                }
+            }
+        }
+    }
+
+    function wpse_save_my_form( $form_data ) {
+        // Run save process here, return true if successful
+        return true;
+    }
+
+    function wpse_validate_my_form( $data ) {
+
+        $validation = array();
+
+        if( $data == 'validate_me' ) {
+            $validation['success'] = "success";
+            $validation['message'] = "the success message";
+        } else {
+            $validation['success'] = "error";
+            $validation['message'] = "the error message";
+        }
+
+        $this->validate = $validation;
+
+    }
+
+}
+
+new MyForm();
+
+
+
 /**
  * Clean up the_excerpt()
  */
@@ -54,3 +410,73 @@ function carawebs_register_user_scripts() {
 }
 
 //add_action('wp_enqueue_scripts', 'carawebs_register_user_scripts', 100);
+//
+//
+
+define('EDD_SLUG', 'products');
+function set_download_labels($labels) {
+	$labels = array(
+		'name' => _x('Products', 'post type general name', 'your-domain'),
+		'singular_name' => _x('Product', 'post type singular name', 'your-domain'),
+		'add_new' => __('Add New', 'your-domain'),
+		'add_new_item' => __('Add New Product', 'your-domain'),
+		'edit_item' => __('Edit Product', 'your-domain'),
+		'new_item' => __('New Product', 'your-domain'),
+		'all_items' => __('All Products', 'your-domain'),
+		'view_item' => __('View Product', 'your-domain'),
+		'search_items' => __('Search Products', 'your-domain'),
+		'not_found' =>  __('No Products found', 'your-domain'),
+		'not_found_in_trash' => __('No Products found in Trash', 'your-domain'),
+		'parent_item_colon' => '',
+		'menu_name' => __('Products', 'your-domain')
+	);
+	return $labels;
+}
+add_filter('edd_download_labels', 'set_download_labels');
+
+function pw_remove_edd_metaboxes() {
+	remove_meta_box('edd_file_download_log', 'download', 'normal');
+}
+//add_action('add_meta_boxes', 'pw_remove_edd_metaboxes', 999);
+//
+function pw_remove_product_options() {
+	remove_action('edd_meta_box_fields', 'edd_render_files_field', 20);
+	remove_action('edd_meta_box_fields', 'edd_render_purchase_text_field', 30);
+	remove_action('edd_meta_box_fields', 'edd_render_link_styles', 40);
+	remove_action('edd_meta_box_fields', 'edd_render_button_color', 50);
+	remove_action('edd_meta_box_fields', 'edd_render_disable_button',60);
+	remove_action('edd_meta_box_fields', 'edd_render_meta_notes',70);
+}
+add_action('admin_init', 'pw_remove_product_options');
+
+add_filter('wp_nav_menu_items','add_search_box', 10, 2);
+
+function add_search_box( $items, $args ) {
+
+  if (!is_admin() && $args->theme_location == 'primary_navigation') {
+
+        ob_start();
+        get_search_form();
+        $searchform = ob_get_contents();
+        ob_end_clean();
+
+        $items .= '<li class="search">Search ' . $searchform . '</li>';
+      }
+
+    return $items;
+}
+
+
+
+
+
+
+// remove the CSS for EDD's custom menu icon
+remove_action( 'admin_head', 'edd_admin_downloads_icon' );
+
+// filter EDD's post type args to use an icon from dashicons (http://melchoyce.github.io/dashicons/)
+function sumobi_edd_modify_menu_icon( $download_args ) {
+	$download_args['menu_icon'] = 'dashicons-cart';
+	return $download_args;
+}
+add_filter( 'edd_download_post_type_args', 'sumobi_edd_modify_menu_icon' );

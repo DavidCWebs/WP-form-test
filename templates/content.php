@@ -5,5 +5,23 @@
   </header>
   <div class="entry-summary">
     <?php the_excerpt(); ?>
+    <?php
+    $associated_workbook = get_field('associated_workbook');
+
+    if ( $associated_workbook ){
+
+      //echo '<pre>';
+      //var_dump( $associated_workbook );
+      //echo '</pre>';
+
+      $workbook_title = $associated_workbook->post_title;
+      $workbook_id = $associated_workbook->ID;
+
+      echo "The associated workbook is: $workbook_title, ID: $workbook_id";
+    }
+
+    ?>
+
+
   </div>
 </article>
