@@ -24,8 +24,6 @@
         </div>
       </div>
 
-      <?php carawebs_process_pdf(); ?>
-
       <div class="well">
       <?php
       if (isset($_POST['pdf-button'])) {
