@@ -8,6 +8,9 @@
 
 function carawebs_create_PDF( $current_username, $post_ID, $student_ID, $submission_html ){
 
+  // Workbook Name
+  $workbook_title = get_the_title( $post_ID );
+
   // Include the main TCPDF library (search for installation path).
   require_once(get_template_directory() . '/tcpdf/tcpdf.php');
 
@@ -15,6 +18,8 @@ function carawebs_create_PDF( $current_username, $post_ID, $student_ID, $submiss
   $pdf = new CW_PDF();
 
   // set document information
+  $pdf->carawebs_set_title("<h1>Student Studio Workbook: $workbook_title</h1>");
+  $pdf->carawebs_set_intro("<p>This document contains the work $current_username submitted as part of the $workbook_title work experience.</p>");
   $pdf->SetCreator('Student Studio');
   $pdf->SetAuthor('David Egan');
   $pdf->SetTitle('Student Studio Workbook Report');
@@ -36,13 +41,13 @@ function carawebs_create_PDF( $current_username, $post_ID, $student_ID, $submiss
 
   // set margins
   //$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-  $pdf->SetMargins(10, 40, 10, true);
+  //$pdf->SetMargins(20, 60, 20, true);
   $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
   //$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
   $pdf->SetFooterMargin($fm = 50);
 
   // set auto page breaks
-  //$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+  // This is important - it essentially sets top margin on the FOOTER
   $pdf->SetAutoPageBreak(TRUE, 40);
 
   // set image scale factor
@@ -55,28 +60,26 @@ function carawebs_create_PDF( $current_username, $post_ID, $student_ID, $submiss
   // dejavusans is a UTF-8 Unicode font, if you only need to
   // print standard ASCII chars, you can use core fonts like
   // helvetica or times to reduce file size.
-  $pdf->SetFont('helvetica', '', 14, '', true);
+  $pdf->SetFont('helvetica', '', 12, '', true);
 
   // Add a page
   // This method has several options, check the source code documentation for more information.
   $pdf->AddPage();
 
   // Set some content to print
-  $html = "<h1>$current_username - You've Created a Mother-Fucking PDF!</h1>";
-  $html .= "<p>The current post ID is $post_ID, so we can get the workbook info.</p>
-  <p>Look, I'm just not ready to ask Lorraine out to the dance, and not you, nor anybody else on this planet is gonna make me change my mind.</p>
-  <p>C'mon, he's not that bad. At least he's letting you borrow the car tomorrow night.</p>
-  <p>Hey Biff, check out this guy's life preserver, dork thinks he's gonna drown. Shit.</p>";
+  //$html = "<h1>Student Studio Workbook for $current_username</h1>";
+  //$html = "<div class='well'>This document contains the work you submitted as part your $workbook_title work experience.</div>";
+
 
   //$html .= the_content(1);
-  $post_id = 1;
-  $post_object = get_post( $post_id );
-  $html .= $post_object->post_content;
-
-  $html .= $submission_html;
+  //$post_id = 1;
+  //$post_object = get_post( $post_id );
+  //$html .= $post_object->post_content;
+  $html = $submission_html;
 
 
   // Print text using writeHTMLCell()
+  //$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
   $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 
   // ---------------------------------------------------------
@@ -150,11 +153,13 @@ function carawebs_return_html_from_posts( $student_ID, $workbook_ID = '' ){
         $title = get_the_title();
         $content = get_the_content();
 
+        $c = 3;
+
         //$student_submission_ID = get_the_id();
-        $html .= '<br/><hr><br/>';
-        $html .= "<h1>$title</h1>";
+        //$html .= '<br/><hr><br/>';
+        $html .= "<h1>Your Submission for Stage $c</h1><h2>$title</h2>";
         $html .= wpautop($content);
-        $html .= '<br/><hr><br/>';
+        //$html .= '<br/><hr><br/>';
 
 
       }

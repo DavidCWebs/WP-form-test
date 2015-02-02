@@ -5,44 +5,156 @@ require_once(get_template_directory() . '/tcpdf/tcpdf.php');
 
 class CW_PDF extends TCPDF {
 
+	public $workbook_title;
+	public $workbook_intro;
+
+	public function carawebs_set_title ( $workbook_title ) {
+
+		$this->workbook_title = $workbook_title;
+
+	}
+
+	public function carawebs_set_intro ( $workbook_intro ) {
+
+		$this->workbook_intro = $workbook_intro;
+
+	}
+
 	public function Header() {
-		//array('B' => array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(180, 180, 180)))
-		//$this->SetLineStyle(array('B' => array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(180, 180, 180))));
-		//$this->SetLineStyle(array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 0)));
-		$this->setJPEGQuality(90);
-		$this->Image(
-			get_template_directory() . '/assets/img/student-studio-logo.png',
-			120,	// $x
-			10,		// $y
-			75,		// $width
-			0,		// $height
-			'PNG',
-			'http://studentstudio.co.uk'
+
+		/**
+		 * Set margins for pages without header
+		 *
+		 */
+		TCPDF::SetMargins(20, 20, 20, true); // The margin for pages without a header
+
+		/**
+		 * @var $pageN int The page number
+		 *
+		 */
+		$pageN = TCPDF::PageNo();
+
+		if ( 1 == $pageN ) {
+
+			/**
+			 * Set margins for page 1 - which has the header
+			 *
+			 */
+			TCPDF::SetMargins(20, 60, 20, true);
+
+			$this->setJPEGQuality(90);
+
+			/**
+			 * Add a rectangle for a bottom border
+			 *
+			 */
+			$this->Rect(20, 5, 170, 45,'F', array('B' => array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(180, 180, 180))), array(255, 255, 255));
+
+			/**
+			 * Title HTML
+			 *
+			 */
+			$this->writeHTMLCell(
+				90,
+				10,
+				20,
+				10,
+				$this->workbook_title,
+				//array('TLBR' => array('width' => 2, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 0))),
+				array(),
+				0,
+				0,
+				'',
+				false
 			);
-		//$this->Cell($w='', $h=5, $txt='', $border=1);
+
+			/**
+			 * Logo HTML
+			 *
+			 */
+			$this->Image(
+				get_template_directory() . '/assets/img/student-studio-logo.png',
+				115,	// $x
+				10,		// $y
+				75,		// $width
+				0,		// $height
+				'PNG',
+				'http://studentstudio.co.uk'
+				);
+
+			/**
+			 *  Intro HTML
+			 *
+			 */
+			$this->writeHTMLCell(
+				170,
+				0,
+				20,
+				35,
+				$this->workbook_intro,
+				0,
+				0,
+				0,
+				true,
+				'L',
+				false
+			);
+
+
+		} else {
+
+			return;
+
+		}
 
 	}
 
 	public function Footer() {
 		$this->SetY(-30);
-		// $pdf->SetFont('times', 'BI', 20, '', 'false');
-		//$this->SetFont(PDF_FONT_NAME_MAIN, 'U', 14);
+		//$this->SetFont('times', 'N', 9);
 
-		// http://www.tcpdf.org/doc/code/classTCPDF.html#a33b265e5eb3e4d1d4fedfe29f8166f31
-		$this->Cell(0, 10, 'studentstudio.co.uk - work experience.', array('T' => array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(180, 180, 180))), false, 'C');
+		$this->Cell(0, 0, '', array('T' => array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(180, 180, 180))), false, 'C');
 		$this->Ln(5);
-		$this->Cell(20, 10, 'Date:' . date('d.m.Y'),
+		$footer_html = '<a href="http://studentstudio.co.uk">studentstudio.co.uk</a> - work experience.';
+
+		$this->writeHTMLCell(
+			50, 					// cell width
+			0,						// cell minimum height
+			'',						// upper left corner x coord
+			270,//'',						// upper left corner y coord
+			$footer_html,	// HTML
+			0,						// Border
+			//array('T' => array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(180, 180, 180))),
+			0,						// Current position after the call
+			0,						// Fill
+			true,					// if true reset last cell height
+			'L',					// Alignment
+			false					// autopadding - if true, uses internal padding and auto adjusts for line width
+		);
+
+		$imagepath = get_template_directory() . '/assets/img/think-up-logo-small-black.png';
+		$this->Image(
+			$imagepath,
+			//get_template_directory() . '/assets/img/think-up-logo-small-black.png',
+			20,	// $x
+			275,		// $y
+			15,		// $width
+			0,		// $height
+			'PNG',
+			'http://thinkup.org'
+			);
+
+		//$this->Cell(0, 10, $footer_html, array('T' => array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(180, 180, 180))), false, 'C');
+		$this->Ln(7);
+		// Cell() method: http://www.tcpdf.org/doc/code/classTCPDF.html#a33b265e5eb3e4d1d4fedfe29f8166f31
+		$this->Cell(20, 10, 'This PDF was created on: ' .
+		//date('l jS \of F Y h:i:s A'),
+			date('l jS \of F Y'),
 			0, 0, 'L'
 			);
 		$this->Cell(0, 10, 'page ' . $this->getAliasNumPage() . ' of ' .
 			$this->getAliasNbPages(), 0, 0, 'R' );
-		//$this->SetY(-10);
-    $this->SetFont('times', 'N', 9);
-		//$this->writeHtmlCell($widthheader,3,20,4,'<p>Page '.$pdf->getAliasNumPage().' of  '.' '.$pdf->getAliasNbPages().'</p>','',1,0,false,'R');
+
 	}
-	/*public function CreateTextBox($textval, $x = 0, $y, $width = 0, $height = 10, $fontsize = 10, $fontstyle = '', $align = 'L') {
-		$this->SetXY($x+20, $y); // 20 = margin left
-		$this->SetFont(PDF_FONT_NAME_MAIN, $fontstyle, $fontsize);
-		$this->Cell($width, $height, $textval, 0, false, $align);
-	}*/
+
 }
