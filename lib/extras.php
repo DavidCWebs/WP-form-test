@@ -6,41 +6,44 @@
 //
 
 
-function carawebs_create_PDF( $current_username, $post_ID ){
+function carawebs_create_PDF( $current_username, $post_ID, $student_ID, $submission_html ){
 
   // Include the main TCPDF library (search for installation path).
   require_once(get_template_directory() . '/tcpdf/tcpdf.php');
 
   // create new PDF document
-  //$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-  //$pdf = new TCPDF();
   $pdf = new CW_PDF();
 
   // set document information
-  //$pdf->SetCreator(PDF_CREATOR);
+  $pdf->SetCreator('Student Studio');
   $pdf->SetAuthor('David Egan');
-  $pdf->SetTitle('TCPDF Test One');
+  $pdf->SetTitle('Student Studio Workbook Report');
   $pdf->SetSubject('Student Studio');
-  $pdf->SetKeywords('TCPDF, PDF, example, test, guide');
+  $pdf->SetKeywords('Work Experience, Digitally Enhanced Learning');
+
+  $pdf->setPrintHeader(true);
 
   // set default header data
   //$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE.' 001', PDF_HEADER_STRING, array(0,64,255), array(0,64,128));
   $pdf->setFooterData(array(0,64,0), array(0,64,128));
 
   // set header and footer fonts
-  $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+  //$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
   $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
   // set default monospaced font
   //$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
   // set margins
-  $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+  //$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+  $pdf->SetMargins(10, 40, 10, true);
   $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-  $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+  //$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+  $pdf->SetFooterMargin($fm = 50);
 
   // set auto page breaks
-  $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+  //$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+  $pdf->SetAutoPageBreak(TRUE, 40);
 
   // set image scale factor
   $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
@@ -59,23 +62,19 @@ function carawebs_create_PDF( $current_username, $post_ID ){
   $pdf->AddPage();
 
   // Set some content to print
-$html = "<h1>$current_username - You've Created a Mother-Fucking PDF!</h1>";
-$html .= "<p>The current post ID is $post_ID, so we can get the workbook info.</p>
-<p>Look, I'm just not ready to ask Lorraine out to the dance, and not you, nor anybody else on this planet is gonna make me change my mind.</p>
-<p>C'mon, he's not that bad. At least he's letting you borrow the car tomorrow night.</p>
-<p>Hey Biff, check out this guy's life preserver, dork thinks he's gonna drown. Shit.</p>";
+  $html = "<h1>$current_username - You've Created a Mother-Fucking PDF!</h1>";
+  $html .= "<p>The current post ID is $post_ID, so we can get the workbook info.</p>
+  <p>Look, I'm just not ready to ask Lorraine out to the dance, and not you, nor anybody else on this planet is gonna make me change my mind.</p>
+  <p>C'mon, he's not that bad. At least he's letting you borrow the car tomorrow night.</p>
+  <p>Hey Biff, check out this guy's life preserver, dork thinks he's gonna drown. Shit.</p>";
 
-//$html .= the_content(1);
-$post_id = 1;
-$post_object = get_post( $post_id );
-$html .= $post_object->post_content;
+  //$html .= the_content(1);
+  $post_id = 1;
+  $post_object = get_post( $post_id );
+  $html .= $post_object->post_content;
 
-/*<<<EOD
-<h1>You've created a PDF</h1>
-<i>This is the first example of PDF creation in Student Studio.</i>
-<p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>
-<p>Please check the source code documentation and other examples for further information.</p>
-EOD;*/
+  $html .= $submission_html;
+
 
   // Print text using writeHTMLCell()
   $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
@@ -84,7 +83,8 @@ EOD;*/
 
   // Close and output PDF document
   // This method has several options, check the source code documentation for more information.
-  $pdf->Output('example_001.pdf', 'I');
+  // http://www.tcpdf.org/doc/code/classTCPDF.html#a3d6dcb62298ec9d42e9125ee2f5b23a1
+  $pdf->Output('my-student-studio-workbook.pdf', 'I');
 
 }
 
@@ -101,13 +101,77 @@ function carawebs_process_pdf() {
     $post_ID = url_to_postid( "http://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'] ) ;
 
 		//carawebs_test_head_function();
-		carawebs_create_PDF( $current_username, $post_ID );
+		$html = carawebs_return_html_from_posts( $current_user_id );
+		carawebs_create_PDF( $current_username, $post_ID, $current_user_id, $html );
 
 	} // end if
 
 } // end my_theme_send_email
 add_action( 'init', 'carawebs_process_pdf' );
 
+
+function carawebs_return_html_from_posts( $student_ID, $workbook_ID = '' ){
+
+  $html = '';
+
+
+    // Gather 'student-submission' for this author - Loop through to build a dropdown for each stage
+    // -------------------------------------------------------------------------
+    $args = array (
+    	'post_type'  => 'post',
+    	'author'     => $student_ID,
+      'posts_per_page'         => '-1',
+      /*'tax_query' => array(
+    		array(
+    			'taxonomy' => 'stage',
+    			'field'    => 'slug',
+    			'terms'    => $c,
+    		),
+    	),
+      'meta_query'             => array(
+    		array(
+    			'key'       => 'workbook',
+    			'value'     => $current_workbook_id,
+    			'compare'   => '=',
+    			'type'      => 'NUMERIC',
+    		),
+    	),*/
+    );
+
+    // The Query
+    $student_submission = new WP_Query( $args );
+
+    // The Loop
+    if ( $student_submission->have_posts() ) {
+
+      while ( $student_submission->have_posts() ) {
+        $student_submission->the_post();
+
+        $title = get_the_title();
+        $content = get_the_content();
+
+        //$student_submission_ID = get_the_id();
+        $html .= '<br/><hr><br/>';
+        $html .= "<h1>$title</h1>";
+        $html .= wpautop($content);
+        $html .= '<br/><hr><br/>';
+
+
+      }
+
+    } else {
+
+      // No submission for this stage yet - do nothing
+
+    }
+
+    // Restore original Post Data
+    wp_reset_postdata();
+
+
+    return $html;
+
+}
 
 /*function cw_init_test(){
 
