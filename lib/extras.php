@@ -40,8 +40,6 @@ function carawebs_create_PDF( $current_username, $post_ID, $student_ID, $submiss
   //$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
   // set margins
-  //$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-  //$pdf->SetMargins(20, 60, 20, true);
   $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
   //$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
   $pdf->SetFooterMargin($fm = 50);
@@ -66,20 +64,10 @@ function carawebs_create_PDF( $current_username, $post_ID, $student_ID, $submiss
   // This method has several options, check the source code documentation for more information.
   $pdf->AddPage();
 
-  // Set some content to print
-  //$html = "<h1>Student Studio Workbook for $current_username</h1>";
-  //$html = "<div class='well'>This document contains the work you submitted as part your $workbook_title work experience.</div>";
-
-
-  //$html .= the_content(1);
-  //$post_id = 1;
-  //$post_object = get_post( $post_id );
-  //$html .= $post_object->post_content;
   $html = $submission_html;
 
 
   // Print text using writeHTMLCell()
-  //$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
   $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 
   // ---------------------------------------------------------
